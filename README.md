@@ -73,5 +73,3 @@ ROI-Lab/
 ## 📝 许可协议 (License)
 
 本项目基于 **MIT License** 开源协议。详情请参阅 [LICENSE](https://www.google.com/search?q=LICENSE) 文件。
-
-```
