@@ -1,0 +1,48 @@
+ROI Lab 文件分类说明
+====================
+
+一、开发/设计工程文件
+--------------------
+这些文件是我们继续开发、改界面、改功能、重新打包时要保留的。
+
+1. 核心源码
+- web\
+- run_app.py
+
+2. 启动文件
+- launch_roi_lab_tool.bat
+- launch_offline.bat
+
+3. 工具脚本
+- tools\build_portable_web_package.ps1
+
+4. 说明文档
+- README.md
+- docs\README_PORTABLE.txt
+- docs\文件分类说明.txt
+
+5. 本地缓存/临时文件
+- .edge-profile\
+- __pycache__\
+
+二、可发布的软件成品
+--------------------
+这些文件可以直接发给没有开发环境的人使用。
+
+1. 可直接使用的发布目录
+- dist\ROI_Lab_Portable_Web\
+
+2. 对应压缩包
+- dist\ROI_Lab_Portable_Web.zip
+
+三、建议使用方式
+----------------
+1. 我们自己继续开发时
+- 主要操作 `web\`、`run_app.py`、`tools\build_portable_web_package.ps1`
+
+2. 发给别人使用时
+- 优先发 `dist\ROI_Lab_Portable_Web.zip`
+- 或直接发整个 `dist\ROI_Lab_Portable_Web\`
+
+3. 不建议直接发送整个工程目录
+- 因为里面同时包含源码、说明文件、缓存文件和发布文件

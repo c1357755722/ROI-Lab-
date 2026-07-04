@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ROI Lab 提取原型</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="control-panel">
+        <div class="panel-card hero-card">
+          <p class="eyebrow">ROI LAB PROTOTYPE</p>
+          <h1>ROI 提取与 Lab 导出</h1>
+          <p class="hero-copy">手动圈选 ROI，批量计算 Lab，并导出 CSV。</p>
+        </div>
+
+        <div class="panel-card">
+          <h2>1. 导入图片</h2>
+          <div class="button-row">
+            <label class="button primary">
+              导入文件
+              <input id="fileInput" type="file" accept="image/*" multiple hidden />
+            </label>
+            <label class="button secondary">
+              导入文件夹
+              <input
+                id="folderInput"
+                type="file"
+                accept="image/*"
+                webkitdirectory
+                multiple
+                hidden
+              />
+            </label>
+          </div>
+          <p class="hint">支持 JPG、PNG、BMP、WEBP 等常见图片格式。</p>
+        </div>
+
+        <div class="panel-card">
+          <h2>2. 手动 ROI</h2>
+          <label class="field">
+            <span>ROI 形状</span>
+            <div class="shape-picker" id="roiShapePicker">
+              <label class="shape-option">
+                <input type="radio" name="roiShape" value="rect" checked />
+                <span>方块</span>
+              </label>
+              <label class="shape-option">
+                <input type="radio" name="roiShape" value="circle" />
+                <span>圆形</span>
+              </label>
+              <label class="shape-option">
+                <input type="radio" name="roiShape" value="lasso" />
+                <span>自定义</span>
+              </label>
+            </div>
+          </label>
+          <p class="hint">在右侧图片上拖拽即可新建 ROI；自定义模式可直接圈出不规则区域。</p>
+        </div>
+
+        <div class="panel-card">
+          <h2>3. 样品命名</h2>
+          <label class="field">
+            <span>批量命名模板</span>
+            <input id="templateInput" type="text" value="{index}_{stem}" />
+          </label>
+          <p class="hint">可用变量：`{index}`、`{stem}`、`{ext}`</p>
+          <button id="applyTemplateBtn" class="button secondary" type="button">应用到全部样品</button>
+          <hr />
+          <label class="field">
+            <span>当前样品名</span>
+            <input id="sampleNameInput" type="text" placeholder="选择图片后可编辑" />
+          </label>
+          <div class="button-row">
+            <button id="saveSampleNameBtn" class="button secondary" type="button">保存当前样品名</button>
+            <button id="copyRoiBtn" class="button ghost" type="button">复制当前 ROI 到全部</button>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <h2>4. Lab 导出</h2>
+          <label class="field">
+            <span>Lab 采样步长</span>
+            <input id="sampleStepInput" type="number" min="1" max="20" step="1" value="2" />
+          </label>
+          <p class="hint">步长越小越精细；`1` 为全像素统计，`2` 为隔 1 个像素采样一次。</p>
+          <div class="button-stack">
+            <button id="measureCurrentBtn" class="button secondary" type="button">计算当前 ROI 的 Lab</button>
+            <button id="exportBtn" class="button primary" type="button">导出 CSV</button>
+          </div>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <section class="viewer-card">
+          <div class="viewer-header">
+            <div>
+              <p class="eyebrow">PREVIEW</p>
+              <h2 id="viewerTitle">还没有导入图片</h2>
+            </div>
+            <div class="viewer-actions">
+              <button id="clearRoiBtn" class="button ghost" type="button">清除当前 ROI</button>
+            </div>
+          </div>
+
+          <div class="viewer-toolbar">
+            <div class="zoom-controls">
+              <button id="zoomOutBtn" class="button secondary compact" type="button">-</button>
+              <label class="zoom-slider">
+                <span>图片缩放</span>
+                <input id="zoomInput" type="range" min="10" max="1000" step="5" value="100" />
+              </label>
+              <label class="zoom-number">
+                <input
+                  id="zoomPercentInput"
+                  type="number"
+                  min="10"
+                  max="1000"
+                  step="5"
+                  value="100"
+                />
+                <span>%</span>
+              </label>
+              <div id="zoomValue" class="zoom-value">100%</div>
+              <button id="zoomInBtn" class="button secondary compact" type="button">+</button>
+              <button id="fitViewBtn" class="button secondary" type="button">适应窗口</button>
+            </div>
+          </div>
+
+          <div class="viewer-body" id="viewerWrap">
+            <div class="viewer-stage" id="viewerStage">
+              <img id="viewerImage" class="viewer-image" alt="preview" />
+              <canvas id="viewerCanvas"></canvas>
+            </div>
+            <div id="panTrackY" class="pan-track pan-track-y" data-axis="y">
+              <button id="panThumbY" class="pan-thumb pan-thumb-y" type="button"></button>
+            </div>
+            <div id="panTrackX" class="pan-track pan-track-x" data-axis="x">
+              <button id="panThumbX" class="pan-thumb pan-thumb-x" type="button"></button>
+            </div>
+            <div class="pan-corner" aria-hidden="true"></div>
+          </div>
+        </section>
+
+        <section class="info-grid">
+          <article class="info-card">
+            <p class="eyebrow">IMAGE</p>
+            <div id="imageMeta" class="meta-list">
+              <div>尺寸：-</div>
+              <div>ROI：-</div>
+              <div>文件：-</div>
+            </div>
+          </article>
+          <article class="info-card">
+            <p class="eyebrow">LAB</p>
+            <div id="labMeta" class="meta-list">
+              <div>L*: -</div>
+              <div>a*: -</div>
+              <div>b*: -</div>
+              <div>像素数：-</div>
+            </div>
+          </article>
+          <article class="info-card">
+            <p class="eyebrow">STATUS</p>
+            <div id="statusBox" class="status-box">等待导入图片。</div>
+          </article>
+        </section>
+
+        <section class="sample-card">
+          <div class="sample-header">
+            <div>
+              <p class="eyebrow">BATCH</p>
+              <h2>样品列表</h2>
+            </div>
+            <div id="sampleCount" class="sample-count">0 张图片</div>
+          </div>
+          <div class="sample-table-wrap">
+            <table class="sample-table">
+              <thead>
+                <tr>
+                  <th>序号</th>
+                  <th>样品条目</th>
+                  <th>ROI</th>
+                  <th>文件名</th>
+                  <th>Lab</th>
+                </tr>
+              </thead>
+              <tbody id="sampleTableBody">
+                <tr class="placeholder-row">
+                  <td colspan="5">导入图片后，这里会显示按 ROI 拆开的批量处理条目。</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
