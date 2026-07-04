@@ -57,10 +57,3 @@
 - 支持缩放、平移、右侧整体滚动
 - 批量命名与 CSV 导出
 
-## 说明
-
-如果只是发给别人使用，建议不要直接发送整个工程目录。
-优先发送：
-
-- `dist\ROI_Lab_Portable_Web.zip`
-- 或 `dist\ROI_Lab_Portable_Web\`
